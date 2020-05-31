@@ -90,14 +90,14 @@ public class GUI extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Stock Ticker", "Percentage of Investment", "Current Share Price", "Price at Initial Date"
+                "Stock Ticker", "Percentage of Investment", "Name", "Current Share Price", "Price at Initial Date"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Integer.class, java.lang.Double.class, java.lang.Double.class
+                java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class
             };
             boolean[] canEdit = new boolean [] {
-                true, true, false, false
+                true, true, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -300,7 +300,7 @@ public class GUI extends javax.swing.JFrame {
     private void addStockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addStockBtnActionPerformed
         DefaultTableModel model = (DefaultTableModel) selectedStocksTable.getModel();
         int row = selectedStocksTable.getSelectedRow() == -1 ? 0 : selectedStocksTable.getSelectedRow();
-        model.insertRow(row, new Object[]{"TICK", 0, (double) 0.0, (double) 0.0});
+        model.insertRow(row, new Object[]{"TICK", 0, "", (double) 0.0, (double) 0.0});
     }//GEN-LAST:event_addStockBtnActionPerformed
 
     private void deleteStockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteStockBtnActionPerformed
@@ -353,7 +353,7 @@ public class GUI extends javax.swing.JFrame {
                     DefaultTableModel smodel = newStockTableModel();
 
                     for (StockConfig scfg : pcfg.stockConfig) {
-                        smodel.addRow(new Object[]{scfg.ticker, scfg.percentage, (double) 0.0, (double) 0.0});
+                        smodel.addRow(new Object[]{scfg.ticker, scfg.percentage, "", (double) 0.0, (double) 0.0});
                     }
 
                     this.stockTableModels.add(smodel);
@@ -419,13 +419,14 @@ public class GUI extends javax.swing.JFrame {
                         BigDecimal price = stock.getQuote().getPrice();
                         BigDecimal fromPrice = stock.getHistory().get(0).getClose();
 
-                        model.setValueAt(price.doubleValue(), i, 2);
-                        model.setValueAt(fromPrice.doubleValue(), i, 3);
+                        model.setValueAt(stock.getName(), i, 2);
+                        model.setValueAt(price.doubleValue(), i, 3);
+                        model.setValueAt(fromPrice.doubleValue(), i, 4);
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        model.setValueAt((double) 0.0, i, 2);
                         model.setValueAt((double) 0.0, i, 3);
+                        model.setValueAt((double) 0.0, i, 4);
                     }
                 }
 
@@ -441,10 +442,10 @@ public class GUI extends javax.swing.JFrame {
                     int percent = (int) smodel.getValueAt(j, 1);
                     double initialBalanceOfThisSecurity = initialBalance * ((double) percent * 0.01);
 
-                    double initialSharePrice = (double) smodel.getValueAt(j, 3);
+                    double initialSharePrice = (double) smodel.getValueAt(j, 4);
                     double sharesBoughtInitially = initialBalanceOfThisSecurity / initialSharePrice;
 
-                    double currentSharePrice = (double) smodel.getValueAt(j, 2);
+                    double currentSharePrice = (double) smodel.getValueAt(j, 3);
                     double currentBalanceOfThisSecurity = sharesBoughtInitially * currentSharePrice;
 
                     currentBalance = currentBalance + currentBalanceOfThisSecurity;
@@ -477,16 +478,16 @@ public class GUI extends javax.swing.JFrame {
     private DefaultTableModel newStockTableModel() {
         DefaultTableModel smodel = new DefaultTableModel(
                 null,
-                new String[]{"Stock Ticker", "Percentage of Investment", "Current Share Price", "Price at Initial Date"}
+                new String[]{"Stock Ticker", "Percentage of Investment", "Name", "Current Share Price", "Price at Initial Date"}
         ) {
-            Class[] types = new Class[]{java.lang.String.class, java.lang.Integer.class, java.lang.Double.class, java.lang.Double.class};
+            Class[] types = new Class[]{java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class};
 
             @Override
             public Class getColumnClass(int columnIndex) {
                 return types[columnIndex];
             }
 
-            boolean[] canEdit = new boolean[]{true, true, false, false};
+            boolean[] canEdit = new boolean[]{true, true, false, false, false};
 
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {

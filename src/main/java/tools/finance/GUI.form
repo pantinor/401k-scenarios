@@ -157,9 +157,10 @@
             <Component class="javax.swing.JTable" name="selectedStocksTable">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                  <Table columnCount="4" rowCount="0">
+                  <Table columnCount="5" rowCount="0">
                     <Column editable="true" title="Stock Ticker" type="java.lang.String"/>
                     <Column editable="true" title="Percentage of Investment" type="java.lang.Integer"/>
+                    <Column editable="false" title="Name" type="java.lang.String"/>
                     <Column editable="false" title="Current Share Price" type="java.lang.Double"/>
                     <Column editable="false" title="Price at Initial Date" type="java.lang.Double"/>
                   </Table>
