@@ -108,9 +108,9 @@ public class GUI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        selectedStocksTable.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                selectedStocksTableMouseClicked(evt);
+        selectedStocksTable.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                selectedStocksTablePropertyChange(evt);
             }
         });
         selectedStocksScrollPane.setViewportView(selectedStocksTable);
@@ -321,10 +321,6 @@ public class GUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_portfolioTableMouseClicked
 
-    private void selectedStocksTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectedStocksTableMouseClicked
-        
-    }//GEN-LAST:event_selectedStocksTableMouseClicked
-
     private void loadConfigBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadConfigBtnActionPerformed
         final JFileChooser fc = new JFileChooser("./");
         int returnVal = fc.showOpenDialog(this);
@@ -443,7 +439,7 @@ public class GUI extends javax.swing.JFrame {
                 DefaultTableModel smodel = this.stockTableModels.get(i);
                 for (int j = 0; j < smodel.getRowCount(); j++) {
                     int percent = (int) smodel.getValueAt(j, 1);
-                    double initialBalanceOfThisSecurity = initialBalance * ((double)percent * 0.01);
+                    double initialBalanceOfThisSecurity = initialBalance * ((double) percent * 0.01);
 
                     double initialSharePrice = (double) smodel.getValueAt(j, 3);
                     double sharesBoughtInitially = initialBalanceOfThisSecurity / initialSharePrice;
@@ -453,7 +449,7 @@ public class GUI extends javax.swing.JFrame {
 
                     currentBalance = currentBalance + currentBalanceOfThisSecurity;
                 }
-                
+
                 this.portfolioTable.setValueAt(currentBalance, i, 1);
             }
 
@@ -463,6 +459,20 @@ public class GUI extends javax.swing.JFrame {
 
 
     }//GEN-LAST:event_calculateBtnActionPerformed
+
+    private void selectedStocksTablePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_selectedStocksTablePropertyChange
+        int idx = this.selectedStocksTable.getEditingRow();
+        if (idx >= 0) {
+            DefaultTableModel smodel = (DefaultTableModel) this.selectedStocksTable.getModel();
+            int total = 0;
+            for (int j = 0; j < smodel.getRowCount(); j++) {
+                int percent = (int) smodel.getValueAt(j, 1);
+                total += percent;
+            }
+            this.percentIndFld.setText(total + "");
+        }
+
+    }//GEN-LAST:event_selectedStocksTablePropertyChange
 
     private DefaultTableModel newStockTableModel() {
         DefaultTableModel smodel = new DefaultTableModel(
@@ -531,7 +541,8 @@ public class GUI extends javax.swing.JFrame {
     private class PortfolioConfig {
 
         String portfolioName;
-        List<StockConfig> stockConfig = new ArrayList<>();;
+        List<StockConfig> stockConfig = new ArrayList<>();
+    ;
 
     }
 
@@ -566,10 +577,10 @@ public class GUI extends javax.swing.JFrame {
         //</editor-fold>
 
         final GUI gui = new GUI();
-        
+
         Calendar c = Calendar.getInstance();
-        c.set(Calendar.MONTH,0);
-        c.set(Calendar.DATE,1);
+        c.set(Calendar.MONTH, 0);
+        c.set(Calendar.DATE, 1);
         String initialDate = SDF.format(c.getTime());
         gui.startDateField.setText(initialDate);
 
