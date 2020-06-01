@@ -90,7 +90,7 @@ public class GUI extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Stock Ticker", "Percentage of Investment", "Name", "Current Share Price", "Price at Initial Date"
+                "Stock", "Percent", "Name", "Current Share Price", "Price Initial Date"
             }
         ) {
             Class[] types = new Class [] {
@@ -284,6 +284,8 @@ public class GUI extends javax.swing.JFrame {
         this.stockTableModels.add(row, smodel);
         this.selectedStocksTable.setModel(smodel);
 
+        setColumnWidths();
+
         model.insertRow(row, new Object[]{"MyPortfolio-" + this.stockTableModels.size(), (double) 0.0});
 
     }//GEN-LAST:event_addPortfolioBtnActionPerformed
@@ -317,6 +319,7 @@ public class GUI extends javax.swing.JFrame {
             DefaultTableModel m = this.stockTableModels.get(idx);
             if (m != this.selectedStocksTable.getModel()) {
                 this.selectedStocksTable.setModel(m);
+                setColumnWidths();
             }
         }
     }//GEN-LAST:event_portfolioTableMouseClicked
@@ -365,6 +368,8 @@ public class GUI extends javax.swing.JFrame {
                 } else {
                     selectedStocksTable.setModel(new DefaultTableModel());
                 }
+
+                setColumnWidths();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -478,7 +483,7 @@ public class GUI extends javax.swing.JFrame {
     private DefaultTableModel newStockTableModel() {
         DefaultTableModel smodel = new DefaultTableModel(
                 null,
-                new String[]{"Stock Ticker", "Percentage of Investment", "Name", "Current Share Price", "Price at Initial Date"}
+                new String[]{"Stock", "Percent", "Name", "Current Share Price", "Price Initial Date"}
         ) {
             Class[] types = new Class[]{java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class};
 
@@ -495,6 +500,14 @@ public class GUI extends javax.swing.JFrame {
             }
         };
         return smodel;
+    }
+
+    private void setColumnWidths() {
+        this.selectedStocksTable.getColumnModel().getColumn(0).setMaxWidth(80);
+        this.selectedStocksTable.getColumnModel().getColumn(1).setMaxWidth(80);
+        this.selectedStocksTable.getColumnModel().getColumn(2).setMaxWidth(350);
+        this.selectedStocksTable.getColumnModel().getColumn(3).setMaxWidth(120);
+        this.selectedStocksTable.getColumnModel().getColumn(4).setMaxWidth(150);
     }
 
     private Config getConfig() throws Exception {
