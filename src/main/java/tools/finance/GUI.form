@@ -75,25 +75,31 @@
                           <Component id="percentSumLbl" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="percentIndFld" min="-2" pref="71" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="247" max="32767" attributes="0"/>
                           <Component id="saveConfigBtn" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="loadConfigBtn" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
                           <Component id="addPortfolioBtn" min="-2" pref="106" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="deletePortfolioBtn" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="calculateBtn" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="74" max="32767" attributes="0"/>
-                          <Component id="initBalLbl" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="startDateLabel" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="initBalLbl" max="32767" attributes="0"/>
+                                  <Component id="mnContLbl" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="initBalFld" min="-2" pref="115" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="startDateLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="startDateField" min="-2" pref="154" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="monContribFld" alignment="1" max="32767" attributes="0"/>
+                              <Component id="initBalFld" alignment="1" max="32767" attributes="0"/>
+                              <Component id="startDateField" alignment="1" pref="154" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -111,11 +117,19 @@
                       <Component id="startDateField" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="startDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="calculateBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="initBalFld" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="initBalLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="selectedStocksScrollPane" pref="353" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="monContribFld" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="mnContLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="selectedStocksScrollPane" pref="301" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="addStockBtn" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -256,6 +270,13 @@
         <Component class="javax.swing.JLabel" name="percentSumLbl">
           <Properties>
             <Property name="text" type="java.lang.String" value="Percent Sum"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="monContribFld">
+        </Component>
+        <Component class="javax.swing.JLabel" name="mnContLbl">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Monthly Contribution"/>
           </Properties>
         </Component>
       </SubComponents>

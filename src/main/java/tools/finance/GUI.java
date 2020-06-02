@@ -23,6 +23,7 @@ import javax.swing.table.TableModel;
 import org.apache.commons.io.IOUtils;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
+import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 
 /**
@@ -65,6 +66,8 @@ public class GUI extends javax.swing.JFrame {
         initBalLbl = new javax.swing.JLabel();
         percentIndFld = new javax.swing.JTextField();
         percentSumLbl = new javax.swing.JLabel();
+        monContribFld = new javax.swing.JTextField();
+        mnContLbl = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -188,6 +191,8 @@ public class GUI extends javax.swing.JFrame {
 
         percentSumLbl.setText("Percent Sum");
 
+        mnContLbl.setText("Monthly Contribution");
+
         javax.swing.GroupLayout scenarioPanelLayout = new javax.swing.GroupLayout(scenarioPanel);
         scenarioPanel.setLayout(scenarioPanelLayout);
         scenarioPanelLayout.setHorizontalGroup(
@@ -205,24 +210,27 @@ public class GUI extends javax.swing.JFrame {
                         .addComponent(percentSumLbl)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(percentIndFld, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
                         .addComponent(saveConfigBtn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(loadConfigBtn))
-                    .addGroup(scenarioPanelLayout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, scenarioPanelLayout.createSequentialGroup()
                         .addComponent(addPortfolioBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deletePortfolioBtn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(calculateBtn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 74, Short.MAX_VALUE)
-                        .addComponent(initBalLbl)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(startDateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(initBalLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mnContLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(initBalFld, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(startDateLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(startDateField, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(monContribFld, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(initBalFld, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(startDateField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         scenarioPanelLayout.setVerticalGroup(
@@ -235,11 +243,17 @@ public class GUI extends javax.swing.JFrame {
                     .addComponent(deletePortfolioBtn)
                     .addComponent(startDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(startDateLabel)
-                    .addComponent(calculateBtn)
+                    .addComponent(calculateBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(initBalFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(initBalLbl))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectedStocksScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(monContribFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mnContLbl))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(selectedStocksScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addStockBtn)
@@ -341,6 +355,7 @@ public class GUI extends javax.swing.JFrame {
 
                 this.startDateField.setText(this.config.initialDate);
                 this.initBalFld.setText(this.config.initialBalance + "");
+                this.monContribFld.setText(this.config.monthlyContribution + "");
 
                 this.stockTableModels.clear();
 
@@ -412,48 +427,53 @@ public class GUI extends javax.swing.JFrame {
             Calendar initialDate = Calendar.getInstance();
             initialDate.setTime(SDF.parse(this.startDateField.getText()));
 
-            for (DefaultTableModel model : this.stockTableModels) {
-                for (int i = 0; i < model.getRowCount(); i++) {
-
-                    try {
-                        String ticker = (String) model.getValueAt(i, 0);
-
-                        //Stock stock = YahooFinance.get(ticker);
-                        Stock stock = YahooFinance.get(ticker, initialDate, Calendar.getInstance(), Interval.MONTHLY);
-
-                        BigDecimal price = stock.getQuote().getPrice();
-                        BigDecimal fromPrice = stock.getHistory().get(0).getClose();
-
-                        model.setValueAt(stock.getName(), i, 2);
-                        model.setValueAt(price.doubleValue(), i, 3);
-                        model.setValueAt(fromPrice.doubleValue(), i, 4);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        model.setValueAt((double) 0.0, i, 3);
-                        model.setValueAt((double) 0.0, i, 4);
-                    }
-                }
-
-            }
-
             double initialBalance = Double.parseDouble(this.initBalFld.getText());
+            double monthlyContrib = Double.parseDouble(this.monContribFld.getText());
 
             for (int i = 0; i < this.portfolioTable.getRowCount(); i++) {
                 double currentBalance = 0.0;
 
                 DefaultTableModel smodel = this.stockTableModels.get(i);
                 for (int j = 0; j < smodel.getRowCount(); j++) {
+
+                    String ticker = (String) smodel.getValueAt(j, 0);
                     int percent = (int) smodel.getValueAt(j, 1);
-                    double initialBalanceOfThisSecurity = initialBalance * ((double) percent * 0.01);
 
-                    double initialSharePrice = (double) smodel.getValueAt(j, 4);
-                    double sharesBoughtInitially = initialBalanceOfThisSecurity / initialSharePrice;
+                    double initialBalanceOfThisStock = initialBalance * ((double) percent * 0.01);
+                    double monthlyContribBalanceThisStock = monthlyContrib * ((double) percent * 0.01);
 
-                    double currentSharePrice = (double) smodel.getValueAt(j, 3);
-                    double currentBalanceOfThisSecurity = sharesBoughtInitially * currentSharePrice;
+                    Stock stock = null;
 
-                    currentBalance = currentBalance + currentBalanceOfThisSecurity;
+                    try {
+                        stock = YahooFinance.get(ticker, initialDate, Calendar.getInstance(), Interval.MONTHLY);
+
+                        System.out.printf("%s price: %f history: %d\n", ticker, stock.getQuote().getPrice().doubleValue(), stock.getHistory().size());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (stock != null) {
+                        BigDecimal price = stock.getQuote().getPrice();
+                        BigDecimal fromPrice = stock.getHistory().get(0).getClose();
+
+                        smodel.setValueAt(stock.getName(), j, 2);
+                        smodel.setValueAt(price.doubleValue(), j, 3);
+                        smodel.setValueAt(fromPrice.doubleValue(), j, 4);
+
+                        double sharesBought = initialBalanceOfThisStock / fromPrice.doubleValue();
+
+                        //skip first quote which is initial
+                        for (int k = 1; k < stock.getHistory().size(); k++) {
+                            HistoricalQuote hq = stock.getHistory().get(k);
+                            if (hq.getClose() != null) {
+                                double sharesBoughtThisMonth = monthlyContribBalanceThisStock / hq.getClose().doubleValue();
+                                sharesBought += sharesBoughtThisMonth;
+                            }
+                        }
+
+                        currentBalance += sharesBought * stock.getQuote().getPrice().doubleValue();
+                    }
                 }
 
                 this.portfolioTable.setValueAt(currentBalance, i, 1);
@@ -485,7 +505,12 @@ public class GUI extends javax.swing.JFrame {
                 null,
                 new String[]{"Stock", "Percent", "Name", "Current Share Price", "Price Initial Date"}
         ) {
-            Class[] types = new Class[]{java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class};
+            Class[] types = new Class[]{java.lang.String.class,
+                java.lang.Integer.class,
+                java.lang.String.class,
+                java.lang.Double.class,
+                java.lang.Double.class
+            };
 
             @Override
             public Class getColumnClass(int columnIndex) {
@@ -518,6 +543,7 @@ public class GUI extends javax.swing.JFrame {
 
         config.initialDate = SDF.format(initialDate);
         config.initialBalance = Double.parseDouble(this.initBalFld.getText());
+        config.monthlyContribution = Double.parseDouble(this.monContribFld.getText());
 
         TableModel portModel = this.portfolioTable.getModel();
 
@@ -549,6 +575,7 @@ public class GUI extends javax.swing.JFrame {
 
         String initialDate;
         double initialBalance;
+        double monthlyContribution;
         List<PortfolioConfig> portfolioConfig = new ArrayList<>();
     }
 
@@ -556,8 +583,6 @@ public class GUI extends javax.swing.JFrame {
 
         String portfolioName;
         List<StockConfig> stockConfig = new ArrayList<>();
-    ;
-
     }
 
     private class StockConfig {
@@ -580,13 +605,17 @@ public class GUI extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(GUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(GUI.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -615,6 +644,8 @@ public class GUI extends javax.swing.JFrame {
     private javax.swing.JTextField initBalFld;
     private javax.swing.JLabel initBalLbl;
     private javax.swing.JButton loadConfigBtn;
+    private javax.swing.JLabel mnContLbl;
+    private javax.swing.JTextField monContribFld;
     private javax.swing.JTextField percentIndFld;
     private javax.swing.JLabel percentSumLbl;
     private javax.swing.JScrollPane portfolioScrolPane;
