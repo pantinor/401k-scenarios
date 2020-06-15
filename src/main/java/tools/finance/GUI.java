@@ -93,14 +93,14 @@ public class GUI extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Stock", "Percent", "Name", "Current Share Price", "Price Initial Date"
+                "Stock", "Percent", "Name", "Current Share Price", "Price Initial Date", "Shares"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class
+                java.lang.String.class, java.lang.Integer.class, java.lang.String.class, java.lang.Double.class, java.lang.Double.class, java.lang.Double.class
             };
             boolean[] canEdit = new boolean [] {
-                true, true, false, false, false
+                true, true, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -223,9 +223,8 @@ public class GUI extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(startDateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(initBalLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(mnContLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(initBalLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(mnContLbl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(scenarioPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(monContribFld, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -473,6 +472,9 @@ public class GUI extends javax.swing.JFrame {
                         }
 
                         currentBalance += sharesBought * stock.getQuote().getPrice().doubleValue();
+
+                        smodel.setValueAt(sharesBought, j, 5);
+
                     }
                 }
 
@@ -503,11 +505,12 @@ public class GUI extends javax.swing.JFrame {
     private DefaultTableModel newStockTableModel() {
         DefaultTableModel smodel = new DefaultTableModel(
                 null,
-                new String[]{"Stock", "Percent", "Name", "Current Share Price", "Price Initial Date"}
+                new String[]{"Stock", "Percent", "Name", "Current Share Price", "Price Initial Date", "Shares"}
         ) {
             Class[] types = new Class[]{java.lang.String.class,
                 java.lang.Integer.class,
                 java.lang.String.class,
+                java.lang.Double.class,
                 java.lang.Double.class,
                 java.lang.Double.class
             };
@@ -517,7 +520,7 @@ public class GUI extends javax.swing.JFrame {
                 return types[columnIndex];
             }
 
-            boolean[] canEdit = new boolean[]{true, true, false, false, false};
+            boolean[] canEdit = new boolean[]{true, true, false, false, false, false};
 
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -529,10 +532,11 @@ public class GUI extends javax.swing.JFrame {
 
     private void setColumnWidths() {
         this.selectedStocksTable.getColumnModel().getColumn(0).setMaxWidth(80);
-        this.selectedStocksTable.getColumnModel().getColumn(1).setMaxWidth(80);
+        this.selectedStocksTable.getColumnModel().getColumn(1).setMaxWidth(60);
         this.selectedStocksTable.getColumnModel().getColumn(2).setMaxWidth(350);
         this.selectedStocksTable.getColumnModel().getColumn(3).setMaxWidth(120);
-        this.selectedStocksTable.getColumnModel().getColumn(4).setMaxWidth(150);
+        this.selectedStocksTable.getColumnModel().getColumn(4).setMaxWidth(120);
+        this.selectedStocksTable.getColumnModel().getColumn(5).setMaxWidth(120);
     }
 
     private Config getConfig() throws Exception {
