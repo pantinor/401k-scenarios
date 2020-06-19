@@ -23,9 +23,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
+import yahoofinance.Stock;
+import yahoofinance.YahooFinance;
+import yahoofinance.histquotes.HistoricalQuote;
+import yahoofinance.histquotes.Interval;
 
 public class GdxGUI extends ApplicationAdapter {
 
@@ -43,6 +51,7 @@ public class GdxGUI extends ApplicationAdapter {
     private static final int BTN_WIDTH = 230;
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat("MM/dd/yyyy");
+    private static final DecimalFormat DF = new DecimalFormat("0.00");
     private Config config = new Config();
 
     public static void main(String[] args) {
@@ -81,6 +90,10 @@ public class GdxGUI extends ApplicationAdapter {
 
         percentSumLabel = new Label("", skin);
 
+        TextField initialDateField = new TextField("", skin);
+        TextField initialBalanceField = new TextField("", skin);
+        TextField monthlyContribField = new TextField("", skin);
+
         Table portfolioContainer = new Table();
         portfolioContainer.debug();
         portfolioContainer.setFillParent(false);
@@ -115,6 +128,9 @@ public class GdxGUI extends ApplicationAdapter {
                     selectedPortfolio.addActor(focusIndicator);
                 }
 
+                stockScroll.setActor(selectedPortfolio.stockTable);
+                stockScroll.layout();
+
             }
 
             return false;
@@ -127,6 +143,9 @@ public class GdxGUI extends ApplicationAdapter {
 
                 PortfolioTableRow row = new PortfolioTableRow("PORTFOLIO");
                 portfolioTable.add(row).height(TEXT_HEIGHT).left().expandX();
+
+                stockScroll.setActor(row.stockTable);
+                stockScroll.layout();
             }
         });
 
@@ -162,8 +181,77 @@ public class GdxGUI extends ApplicationAdapter {
         });
 
         TextButton calcButton = new TextButton("Calculate", skin);
-        addPortButton.addListener(new ChangeListener() {
+        calcButton.addListener(new ChangeListener() {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+
+                try {
+                    Calendar initialDate = Calendar.getInstance();
+                    initialDate.setTime(SDF.parse(initialDateField.getText()));
+
+                    double initialBalance = Double.parseDouble(initialBalanceField.getText());
+                    double monthlyContrib = Double.parseDouble(monthlyContribField.getText());
+
+                    Iterator<Cell> iter = portfolioTable.getCells().iterator();
+                    while (iter.hasNext()) {
+                        double currentBalance = 0.0;
+
+                        PortfolioTableRow prow = (PortfolioTableRow) iter.next().getActor();
+
+                        Table smodel = prow.stockTable;
+                        for (int j = 0; j < smodel.getRows(); j++) {
+
+                            StockTableRow srow = (StockTableRow) smodel.getCells().get(j).getActor();
+
+                            String ticker = srow.cfg.ticker;
+                            int percent = srow.cfg.percentage;
+
+                            double initialBalanceOfThisStock = initialBalance * ((double) percent * 0.01);
+                            double monthlyContribBalanceThisStock = monthlyContrib * ((double) percent * 0.01);
+
+                            Stock stock = null;
+
+                            try {
+                                stock = YahooFinance.get(ticker, initialDate, Calendar.getInstance(), Interval.MONTHLY);
+
+                                System.out.printf("%s price: %f history: %d\n", ticker, stock.getQuote().getPrice().doubleValue(), stock.getHistory().size());
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            if (stock != null) {
+                                BigDecimal price = stock.getQuote().getPrice();
+                                BigDecimal fromPrice = stock.getHistory().get(0).getClose();
+
+                                srow.name.setText(stock.getName());
+                                srow.currentSharePrice.setText(DF.format(price.doubleValue()) + "");
+                                srow.priceInitialDate.setText(DF.format(fromPrice.doubleValue()) + "");
+
+                                double sharesBought = initialBalanceOfThisStock / fromPrice.doubleValue();
+
+                                //skip first quote which is initial
+                                for (int k = 1; k < stock.getHistory().size(); k++) {
+                                    HistoricalQuote hq = stock.getHistory().get(k);
+                                    if (hq.getClose() != null) {
+                                        double sharesBoughtThisMonth = monthlyContribBalanceThisStock / hq.getClose().doubleValue();
+                                        sharesBought += sharesBoughtThisMonth;
+                                    }
+                                }
+
+                                currentBalance += sharesBought * stock.getQuote().getPrice().doubleValue();
+
+                                srow.shares.setText(DF.format(sharesBought) + "");
+
+                            }
+                        }
+
+                        prow.value.setText(DF.format(currentBalance) + "");
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
         });
 
@@ -178,10 +266,6 @@ public class GdxGUI extends ApplicationAdapter {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
             }
         });
-
-        TextField initialDateField = new TextField("", skin);
-        TextField initialBalanceField = new TextField("", skin);
-        TextField monthlyContribField = new TextField("", skin);
 
         portfolioContainer.add(portfolioHdrTable).height(TEXT_HEIGHT).expand().fill().colspan(3);
 
@@ -329,6 +413,8 @@ public class GdxGUI extends ApplicationAdapter {
 
     private class PortfolioTableRow extends Group {
 
+        Table stockTable = newStockTable();
+
         PortfolioConfig cfg;
         TextField name;
         Label value;
@@ -355,31 +441,48 @@ public class GdxGUI extends ApplicationAdapter {
 
         PortfolioTableRow parent;
         StockConfig cfg;
+
         TextField stock;
         TextField percent;
-        Label name;
-        Label currentSharePrice;
-        Label priceInitialDate;
-        Label shares;
+        TextField name;
+        TextField currentSharePrice;
+        TextField priceInitialDate;
+        TextField shares;
 
         public StockTableRow(PortfolioTableRow parent, String stock, int percent) {
 
             this.parent = parent;
-            
+
             this.cfg = new StockConfig();
             this.cfg.ticker = stock;
             this.cfg.percentage = percent;
-            
-            parent.cfg.stockConfig.add(this.cfg);
+
+            this.parent.cfg.stockConfig.add(this.cfg);
 
             this.stock = new TextField(stock, skin);
             this.percent = new TextField("" + percent, skin);
-            this.percent.setUserObject(percent);
 
-            this.name = new Label("name of stock", skin);
-            this.currentSharePrice = new Label("1111", skin);
-            this.priceInitialDate = new Label("2222", skin);
-            this.shares = new Label("3333", skin);
+            this.name = new TextField("name of stock", skin);
+            this.currentSharePrice = new TextField("1111", skin);
+            this.priceInitialDate = new TextField("2222", skin);
+            this.shares = new TextField("3333", skin);
+
+            this.name.setDisabled(true);
+            this.currentSharePrice.setDisabled(true);
+            this.priceInitialDate.setDisabled(true);
+            this.shares.setDisabled(true);
+
+            this.stock.addListener(new ChangeListener() {
+                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                    StockTableRow.this.cfg.ticker = StockTableRow.this.stock.getText();
+                }
+            });
+
+            this.percent.addListener(new ChangeListener() {
+                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                    StockTableRow.this.cfg.percentage = Integer.parseInt(StockTableRow.this.percent.getText());
+                }
+            });
 
             addActor(this.stock);
             addActor(this.percent);
@@ -389,17 +492,17 @@ public class GdxGUI extends ApplicationAdapter {
             addActor(this.shares);
 
             int dim = 0;
-            this.stock.setBounds(getX(), getY(), 120, TEXT_HEIGHT);
-            dim += 120;
-            this.percent.setBounds(getX() + dim + 2, getY(), 50, TEXT_HEIGHT);
-            dim += 50;
-            this.name.setBounds(getX() + dim + 5, getY(), 300, TEXT_HEIGHT);
-            dim += 300;
-            this.currentSharePrice.setBounds(getX() + dim + 2, getY(), 100, TEXT_HEIGHT);
-            dim += 100;
-            this.priceInitialDate.setBounds(getX() + dim + 2, getY(), 100, TEXT_HEIGHT);
-            dim += 100;
-            this.shares.setBounds(getX() + dim + 2, getY(), 100, TEXT_HEIGHT);
+            this.stock.setBounds(getX(), getY(), 130, TEXT_HEIGHT);
+            dim += 130 + 5;
+            this.percent.setBounds(getX() + dim, getY(), 60, TEXT_HEIGHT);
+            dim += 60 + 5;
+            this.name.setBounds(getX() + dim, getY(), 300, TEXT_HEIGHT);
+            dim += 300 + 5;
+            this.currentSharePrice.setBounds(getX() + dim, getY(), 150, TEXT_HEIGHT);
+            dim += 150 + 5;
+            this.priceInitialDate.setBounds(getX() + dim, getY(), 150, TEXT_HEIGHT);
+            dim += 150 + 5;
+            this.shares.setBounds(getX() + dim, getY(), 150, TEXT_HEIGHT);
 
         }
 
