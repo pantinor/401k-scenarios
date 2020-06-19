@@ -39,6 +39,12 @@
         </dependency>
         <dependency>
             <groupId>com.badlogicgames.gdx</groupId>
+            <artifactId>gdx</artifactId>
+            <version>1.9.10</version>
+            <classifier>sources</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.badlogicgames.gdx</groupId>
             <artifactId>gdx-backend-lwjgl</artifactId>
             <version>1.9.10</version>
         </dependency>

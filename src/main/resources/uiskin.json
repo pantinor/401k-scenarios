@@ -1,5 +1,8 @@
 {
-com.badlogic.gdx.graphics.g2d.BitmapFont: { default-font: { file: arial-48.fnt } },
+com.badlogic.gdx.graphics.g2d.BitmapFont: { 
+    default-font: { file: arial-32.fnt }
+    arial-32-font: { file: arial-32.fnt } 
+},
 com.badlogic.gdx.graphics.Color: {
 	green: { a: 1, b: 0, g: 1, r: 0 },
 	white: { a: 1, b: 1, g: 1, r: 1 },
@@ -44,10 +47,12 @@ com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
 	default-vertical: { background: default-slider, knob: default-round-large }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
-	default: { font: default-font, fontColor: white }
+	default: { font: default-font, fontColor: white },
+	default-32: { font: arial-32-font, fontColor: white }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-	default: { selection: selection, background: textfield, font: default-font, fontColor: white, cursor: cursor }
+	default: { selection: selection, background: textfield, font: default-font, fontColor: white, cursor: cursor },
+        default-32: { selection: selection, background: textfield, font: arial-32-font, fontColor: white, cursor: cursor }
 },
 com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
 	default: { checkboxOn: check-on, checkboxOff: check-off, font: default-font, fontColor: white }
