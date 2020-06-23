@@ -24,7 +24,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Json;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.math.BigDecimal;
@@ -227,6 +226,24 @@ public class GdxGUI extends ApplicationAdapter {
                                 srow.name.setText(stock.getName());
                                 srow.currentSharePrice.setText(DF.format(price.doubleValue()) + "");
                                 srow.priceInitialDate.setText(DF.format(fromPrice.doubleValue()) + "");
+
+                                double delta = 100 * ((price.doubleValue() - fromPrice.doubleValue()) / fromPrice.doubleValue());
+
+                                if (delta > 20.0) {
+                                    srow.currentSharePrice.setColor(Color.GREEN);
+                                } else if (delta > 10.0) {
+                                    srow.currentSharePrice.setColor(Color.FOREST);
+                                } else if (delta > 5.0) {
+                                    srow.currentSharePrice.setColor(Color.OLIVE);
+                                } else if (delta < -20.0) {
+                                    srow.currentSharePrice.setColor(Color.RED);
+                                } else if (delta < -10.0) {
+                                    srow.currentSharePrice.setColor(Color.FIREBRICK);
+                                } else if (delta < -5.0) {
+                                    srow.currentSharePrice.setColor(Color.YELLOW);
+                                } else {
+                                    srow.currentSharePrice.setColor(new Color(1, 1, 1, 1));
+                                }
 
                                 double sharesBought = initialBalanceOfThisStock / fromPrice.doubleValue();
 
