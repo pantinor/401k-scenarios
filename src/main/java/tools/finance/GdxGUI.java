@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -23,11 +24,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Json;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import yahoofinance.Stock;
@@ -44,14 +49,13 @@ public class GdxGUI extends ApplicationAdapter {
     private Label percentSumLabel;
 
     private PortfolioTableRow selectedPortfolio;
-    private Image focusIndicator;
     private StockTableRow stockTableIndex = null;
 
     private static final int TEXT_HEIGHT = 36;
     private static final int BTN_WIDTH = 230;
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat("MM/dd/yyyy");
-    private static final DecimalFormat DF = new DecimalFormat("0.00");
+    private static final DecimalFormat DF = new DecimalFormat("###,###.##");
     private Config config = new Config();
 
     public static void main(String[] args) {
@@ -84,18 +88,19 @@ public class GdxGUI extends ApplicationAdapter {
 
         Image background = new Image(fillRectangle(300, 10, Color.GRAY, .75f));
 
-        focusIndicator = new Image(fillRectangle(BTN_WIDTH * 1, TEXT_HEIGHT, Color.YELLOW, .35f));
-        focusIndicator.setWidth(BTN_WIDTH * 1);
-        focusIndicator.setHeight(TEXT_HEIGHT);
-
         percentSumLabel = new Label("", skin);
 
-        TextField initialDateField = new TextField("", skin);
-        TextField initialBalanceField = new TextField("", skin);
-        TextField monthlyContribField = new TextField("", skin);
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.MONTH, 0);
+        c.set(Calendar.DATE, 1);
+        String initialDate = SDF.format(c.getTime());
+
+        TextField initialDateField = new TextField(initialDate, skin);
+        TextField initialBalanceField = new TextField("400000", skin);
+        TextField monthlyContribField = new TextField("2300", skin);
 
         Table portfolioContainer = new Table();
-        portfolioContainer.debug();
+        //portfolioContainer.debug();
         portfolioContainer.setFillParent(false);
 
         Table portfolioHdrTable = new Table();
@@ -116,16 +121,12 @@ public class GdxGUI extends ApplicationAdapter {
                     return false;
                 }
 
-                if (focusIndicator.getParent() != null) {
-                    focusIndicator.getParent().removeActor(focusIndicator);
-                }
-
                 if (event.getTarget() instanceof PortfolioTableRow) {
                     selectedPortfolio = (PortfolioTableRow) event.getTarget();
-                    selectedPortfolio.addActor(focusIndicator);
+                    selectedPortfolio.name.selectAll();
                 } else if (event.getTarget().getParent() instanceof PortfolioTableRow) {
                     selectedPortfolio = (PortfolioTableRow) event.getTarget().getParent();
-                    selectedPortfolio.addActor(focusIndicator);
+                    selectedPortfolio.name.selectAll();
                 }
 
                 stockScroll.setActor(selectedPortfolio.stockTable);
@@ -258,12 +259,88 @@ public class GdxGUI extends ApplicationAdapter {
         TextButton saveButton = new TextButton("Save", skin);
         saveButton.addListener(new ChangeListener() {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+
+                try {
+
+                    Config config = new Config();
+
+                    Date initialDate = SDF.parse(initialDateField.getText());
+
+                    config.initialDate = SDF.format(initialDate);
+                    config.initialBalance = Double.parseDouble(initialBalanceField.getText());
+                    config.monthlyContribution = Double.parseDouble(monthlyContribField.getText());
+
+                    Iterator<Cell> iter = portfolioTable.getCells().iterator();
+                    while (iter.hasNext()) {
+                        PortfolioTableRow prow = (PortfolioTableRow) iter.next().getActor();
+
+                        config.portfolioConfig.add(prow.cfg);
+
+                        prow.cfg.stockConfig.clear();
+
+                        Table smodel = prow.stockTable;
+                        for (int j = 0; j < smodel.getRows(); j++) {
+                            StockTableRow srow = (StockTableRow) smodel.getCells().get(j).getActor();
+                            prow.cfg.stockConfig.add(srow.cfg);
+                        }
+                    }
+
+                    GsonBuilder builder = new GsonBuilder();
+                    Gson gson = builder.setPrettyPrinting().create();
+                    String jsons = gson.toJson(config);
+
+                    //Json json = new Json();
+                    //String jsons = json.prettyPrint(config);
+                    FileHandle file = Gdx.files.local("portfolio.json");
+                    file.writeString(jsons, false);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
         TextButton loadButton = new TextButton("Load", skin);
         loadButton.addListener(new ChangeListener() {
             public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+
+                try {
+
+                    byte[] data = Gdx.files.local("portfolio.json").readBytes();
+                    String jsons = new String(data, "UTF-8");
+
+                    GsonBuilder builder = new GsonBuilder();
+                    Gson gson = builder.create();
+                    Config config = gson.fromJson(jsons, Config.class);
+
+                    //Json json = new Json();
+                    //Config config = json.fromJson(Config.class, jsons);
+                    initialDateField.setText(config.initialDate);
+                    initialBalanceField.setText(config.initialBalance + "");
+                    monthlyContribField.setText(config.monthlyContribution + "");
+
+                    portfolioTable.clearChildren();
+
+                    for (PortfolioConfig pcfg : config.portfolioConfig) {
+
+                        portfolioTable.row().pad(2);
+
+                        PortfolioTableRow prow = new PortfolioTableRow(pcfg.portfolioName);
+                        portfolioTable.add(prow).height(TEXT_HEIGHT).left().expandX();
+
+                        for (StockConfig scfg : pcfg.stockConfig) {
+                            prow.stockTable.row().pad(2);
+                            StockTableRow row = new StockTableRow(prow, scfg.ticker, scfg.percentage);
+                            prow.stockTable.add(row).height(TEXT_HEIGHT).left().expandX();
+                        }
+
+                    }
+
+                    portfolioTable.layout();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -272,7 +349,7 @@ public class GdxGUI extends ApplicationAdapter {
         portfolioContainer.row();
         ScrollPane portfolioScroll = new ScrollPane(portfolioTable, skin);
 
-        portfolioContainer.add(portfolioScroll).height(5 * TEXT_HEIGHT + 5 * 2).expand().fill().colspan(3);
+        portfolioContainer.add(portfolioScroll).height(5 * TEXT_HEIGHT + 25).expand().fill().colspan(3);
 
         portfolioContainer.row().space(5).padBottom(2);
         portfolioContainer.add(addPortButton).right().width(BTN_WIDTH).expandX();
@@ -281,17 +358,17 @@ public class GdxGUI extends ApplicationAdapter {
 
         portfolioContainer.row().space(5).padBottom(2);
         portfolioContainer.add(new Label("Initial Date", skin)).right().expandX();
-        portfolioContainer.add(initialDateField).left();
+        portfolioContainer.add(initialDateField).left().width(BTN_WIDTH);
         portfolioContainer.add(saveButton).left().width(BTN_WIDTH).expandX();
 
         portfolioContainer.row().space(5).padBottom(2);
         portfolioContainer.add(new Label("Initial Balance", skin)).right().expandX();
-        portfolioContainer.add(initialBalanceField).left();
+        portfolioContainer.add(initialBalanceField).left().width(BTN_WIDTH);
         portfolioContainer.add(loadButton).left().width(BTN_WIDTH).expandX();
 
         portfolioContainer.row().space(5).padBottom(2);
         portfolioContainer.add(new Label("Monthly Contribution", skin)).right().expandX();
-        portfolioContainer.add(monthlyContribField).left().expandX();
+        portfolioContainer.add(monthlyContribField).left().width(BTN_WIDTH).expandX();
 
         Table stockHdrTable = new Table();
         stockHdrTable.setBackground(background.getDrawable());
@@ -308,7 +385,7 @@ public class GdxGUI extends ApplicationAdapter {
         portfolioContainer.add(stockHdrTable).height(TEXT_HEIGHT).expand().fill().colspan(3);
 
         portfolioContainer.row();
-        portfolioContainer.add(stockScroll).height(10 * TEXT_HEIGHT + 10 * 2).expand().fill().colspan(3);
+        portfolioContainer.add(stockScroll).height(10 * TEXT_HEIGHT + TEXT_HEIGHT + 8).expand().fill().colspan(3);
 
         TextButton addStockButton = new TextButton("Add Stock", skin);
         addStockButton.addListener(new ChangeListener() {
@@ -368,7 +445,15 @@ public class GdxGUI extends ApplicationAdapter {
         Table table = new Table(skin);
         table.addListener((Event event) -> {
             if (event.toString().equals("touchDown")) {
+                percentSum = 0;
                 table.getCells().iterator().forEachRemaining(cell -> {
+
+                    try {
+                        StockTableRow srow = (StockTableRow) cell.getActor();
+                        percentSum += Integer.parseInt(srow.percent.getText());
+                    } catch (Exception e) {
+
+                    }
                     if (event.getTarget().getParent() == cell.getActor()) {
                         GdxGUI.this.stockTableIndex = (StockTableRow) cell.getActor();
                     }
@@ -417,7 +502,7 @@ public class GdxGUI extends ApplicationAdapter {
 
         PortfolioConfig cfg;
         TextField name;
-        Label value;
+        TextField value;
 
         public PortfolioTableRow(String name) {
 
@@ -425,13 +510,19 @@ public class GdxGUI extends ApplicationAdapter {
             this.cfg.portfolioName = name;
 
             this.name = new TextField(name, skin);
-            this.value = new Label("value", skin);
+            this.value = new TextField("value", skin);
+
+            this.name.addListener(new ChangeListener() {
+                public void changed(ChangeListener.ChangeEvent event, Actor actor) {
+                    PortfolioTableRow.this.cfg.portfolioName = PortfolioTableRow.this.name.getText();
+                }
+            });
 
             addActor(this.name);
             addActor(this.value);
 
-            this.name.setBounds(getX(), getY(), BTN_WIDTH, TEXT_HEIGHT);
-            this.value.setPosition(getX() + BTN_WIDTH + 10, getY());
+            this.name.setBounds(getX(), getY(), BTN_WIDTH * 2, TEXT_HEIGHT);
+            this.value.setBounds(getX() + BTN_WIDTH * 2 + 10, getY(), BTN_WIDTH * 2, TEXT_HEIGHT);
 
         }
 
@@ -480,7 +571,11 @@ public class GdxGUI extends ApplicationAdapter {
 
             this.percent.addListener(new ChangeListener() {
                 public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                    StockTableRow.this.cfg.percentage = Integer.parseInt(StockTableRow.this.percent.getText());
+                    try {
+                        StockTableRow.this.cfg.percentage = Integer.parseInt(StockTableRow.this.percent.getText());
+                    } catch (Exception e) {
+
+                    }
                 }
             });
 
@@ -493,22 +588,22 @@ public class GdxGUI extends ApplicationAdapter {
 
             int dim = 0;
             this.stock.setBounds(getX(), getY(), 130, TEXT_HEIGHT);
-            dim += 130 + 5;
+            dim += 130 + 3;
             this.percent.setBounds(getX() + dim, getY(), 60, TEXT_HEIGHT);
-            dim += 60 + 5;
-            this.name.setBounds(getX() + dim, getY(), 300, TEXT_HEIGHT);
-            dim += 300 + 5;
+            dim += 60 + 3;
+            this.name.setBounds(getX() + dim, getY(), 360, TEXT_HEIGHT);
+            dim += 360 + 3;
             this.currentSharePrice.setBounds(getX() + dim, getY(), 150, TEXT_HEIGHT);
-            dim += 150 + 5;
+            dim += 150 + 3;
             this.priceInitialDate.setBounds(getX() + dim, getY(), 150, TEXT_HEIGHT);
-            dim += 150 + 5;
+            dim += 150 + 3;
             this.shares.setBounds(getX() + dim, getY(), 150, TEXT_HEIGHT);
 
         }
 
     }
 
-    private class Config {
+    private static class Config {
 
         String initialDate;
         double initialBalance;
@@ -516,13 +611,13 @@ public class GdxGUI extends ApplicationAdapter {
         List<PortfolioConfig> portfolioConfig = new ArrayList<>();
     }
 
-    private class PortfolioConfig {
+    private static class PortfolioConfig {
 
         String portfolioName;
         List<StockConfig> stockConfig = new ArrayList<>();
     }
 
-    private class StockConfig {
+    private static class StockConfig {
 
         String ticker;
         int percentage;
